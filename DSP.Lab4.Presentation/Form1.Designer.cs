@@ -98,7 +98,7 @@ namespace DSP.Lab4.Presentation
             series2.Name = "Второй сигнал";
             this.chart1.Series.Add(series1);
             this.chart1.Series.Add(series2);
-            this.chart1.Size = new System.Drawing.Size(465, 229);
+            this.chart1.Size = new System.Drawing.Size(893, 229);
             this.chart1.TabIndex = 1;
             this.chart1.Text = "chart1";
             title1.Name = "Title1";
@@ -131,7 +131,7 @@ namespace DSP.Lab4.Presentation
             this.chart2.Series.Add(series3);
             this.chart2.Series.Add(series4);
             this.chart2.Series.Add(series5);
-            this.chart2.Size = new System.Drawing.Size(465, 229);
+            this.chart2.Size = new System.Drawing.Size(893, 229);
             this.chart2.TabIndex = 2;
             this.chart2.Text = "chart2";
             title2.Name = "Title1";
@@ -163,7 +163,7 @@ namespace DSP.Lab4.Presentation
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.GradientInactiveCaption;
-            this.ClientSize = new System.Drawing.Size(746, 498);
+            this.ClientSize = new System.Drawing.Size(1175, 498);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.chart2);
             this.Controls.Add(this.chart1);

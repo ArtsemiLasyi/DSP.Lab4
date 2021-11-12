@@ -170,7 +170,7 @@ namespace DSP.Lab4.Api
             return corr;
         }
 
-        public static Complex[] FastMinimazeCrossCorrelation(double[] signal1, double[] signal2)
+        public static Complex[] FastMinimizeCrossCorrelation(double[] signal1, double[] signal2)
         {
             int L = signal1.Length;
             Complex[] cps = new Complex[L];
@@ -208,7 +208,7 @@ namespace DSP.Lab4.Api
             return corr;
         }
 
-        public static Complex[] FastMinimazeAutoCorrelation(double[] signal)
+        public static Complex[] FastMinimizeAutoCorrelation(double[] signal)
         {
             int L = signal.Length;
             Complex[] cps = new Complex[L];

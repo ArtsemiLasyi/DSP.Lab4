@@ -10,7 +10,7 @@ namespace DSP.Lab4.Presentation
     public partial class Form1 : Form
     {
         Chart[] targetCharts;
-        int N = 1024;
+        int N = 2048;
 
         public Form1()
         {
@@ -37,49 +37,52 @@ namespace DSP.Lab4.Presentation
             HarmonicSignal firstHarmonicSignal = new HarmonicSignal(100, 1, 0, N);
             HarmonicSignal secondHarmonicSignal = new HarmonicSignal(70, 3, 30, N);
 
-            Complex[] cs = null;
-            Complex[] fcs = null;
-            Complex[] fmcs = null;
+            Complex[] simpleCorrelation = null;
+            Complex[] fastCorrelation = null;
+            Complex[] fastMinimizeCorellation = null;
 
             Stopwatch firstStopWatch = new Stopwatch();
             Stopwatch secondStopWatch = new Stopwatch();
             Stopwatch thirdStopWatch = new Stopwatch();
 
-            long time = 1;
-            long fastTime = 1;
-            long minimazeFastTime = 1;
+            long time = 0;
+            long fastTime = 0;
+            long minimazeFastTime = 0;
 
             switch (correlationType)
             {
                 case СorrelationType.Cross:
                     firstStopWatch.Start();
-                    cs = Сorrelation.CrossCorrelation(firstHarmonicSignal.signVal, secondHarmonicSignal.signVal);
+                    simpleCorrelation = Сorrelation.CrossCorrelation(firstHarmonicSignal.signVal, secondHarmonicSignal.signVal);
                     firstStopWatch.Stop();
                     time = firstStopWatch.ElapsedTicks;
 
                     secondStopWatch.Start();
-                    fcs = Сorrelation.FastCrossCorrelation(firstHarmonicSignal.signVal, secondHarmonicSignal.signVal);
+                    fastCorrelation = Сorrelation.FastCrossCorrelation(firstHarmonicSignal.signVal, secondHarmonicSignal.signVal);
                     secondStopWatch.Stop();
                     fastTime = secondStopWatch.ElapsedTicks;
 
                     thirdStopWatch.Start();
-                    fmcs = Сorrelation.FastMinimazeCrossCorrelation(firstHarmonicSignal.signVal, secondHarmonicSignal.signVal);
+                    fastMinimizeCorellation = Сorrelation.FastMinimizeCrossCorrelation(
+                        firstHarmonicSignal.signVal, 
+                        secondHarmonicSignal.signVal
+                    );
                     thirdStopWatch.Stop();
                     minimazeFastTime = thirdStopWatch.ElapsedTicks;
                     break;
                 case СorrelationType.Auto:
                     firstStopWatch.Start();
-                    cs = Сorrelation.AutoCorrelation(firstHarmonicSignal.signVal);
+                    simpleCorrelation = Сorrelation.AutoCorrelation(firstHarmonicSignal.signVal);
                     firstStopWatch.Stop();
                     time = firstStopWatch.ElapsedTicks;
 
                     secondStopWatch.Start();
-                    fcs = Сorrelation.FastAutoCorrelation(firstHarmonicSignal.signVal);
+                    fastCorrelation = Сorrelation.FastAutoCorrelation(firstHarmonicSignal.signVal);
                     secondStopWatch.Stop();
                     fastTime = secondStopWatch.ElapsedTicks;
 
                     thirdStopWatch.Start();
-                    fmcs = Сorrelation.FastMinimazeAutoCorrelation(firstHarmonicSignal.signVal);
+                    fastMinimizeCorellation = Сorrelation.FastMinimizeAutoCorrelation(firstHarmonicSignal.signVal);
                     thirdStopWatch.Stop();
                     minimazeFastTime = secondStopWatch.ElapsedTicks;
                     break;
@@ -112,19 +115,19 @@ namespace DSP.Lab4.Presentation
                 }
             }
 
-            for (int i = 0; i < cs.Length; i++)
+            for (int i = 0; i < simpleCorrelation.Length; i++)
             {
-                targetCharts[1].Series[0].Points.AddXY(2 * Math.PI * i / N, cs[i].Real);
+                targetCharts[1].Series[0].Points.AddXY(2 * Math.PI * i / N, simpleCorrelation[i].Real);
             }
 
-            for (int i = 0; i < fcs.Length; i++)
+            for (int i = 0; i < fastCorrelation.Length; i++)
             {
-                targetCharts[1].Series[1].Points.AddXY(2 * Math.PI * i / N, fcs[i].Real);
+                targetCharts[1].Series[1].Points.AddXY(2 * Math.PI * i / N, fastCorrelation[i].Real);
             }
 
-            for (int i = 0; i < fmcs.Length; i++)
+            for (int i = 0; i < fastMinimizeCorellation.Length; i++)
             {
-                targetCharts[1].Series[2].Points.AddXY(2 * Math.PI * i / N, fmcs[i].Real);
+                targetCharts[1].Series[2].Points.AddXY(2 * Math.PI * i / N, fastMinimizeCorellation[i].Real);
             }
 
             string percents = string.Format("{0:00}%", fastTime * 100 / time);
