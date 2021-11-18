@@ -10,240 +10,139 @@ namespace DSP.Lab4.Api
     {
         public static Complex[] CrossCorrelation(double[] signal1, double[] signal2)
         {
-            int length = signal1.Length + signal2.Length - 1;
+            if (signal1.Length != signal2.Length)
+            {
+                throw new ArgumentException("The lengths of arrays must be the same");
+            }
 
-            Complex[] corr = new Complex[length];
+            int L = signal1.Length + signal2.Length;
+
+            Complex[] correlation = new Complex[L];
 
             int index1 = 0;
             int index2 = signal2.Length - 1;
 
-            for (int i = 0; i < length; i++)
+            int start;
+            int end;
+            int index;
+
+            for (int i = 0; i < L; i++)
             {
                 Complex sum = 0;
-
-                int start = (i < signal1.Length) 
-                    ? index1 
-                    : index2;
-                int end = (i < signal2.Length) 
-                    ? signal1.Length
-                    : signal2.Length;
-
-                for (int j = start; j < end; j++)
-                {
-                    sum += signal1[index1] * signal2[index2];
-                }
 
                 if (i < signal1.Length - 1)
                 {
+                    start = index2;
+                    end = signal2.Length;
+                    index = 0;
+
+                    for (int j = start; j < end; j++)
+                    {
+                        sum += signal1[index++] * signal2[j];
+                    }
+
                     index1++;
                     index2--;
                 }
                 else
                 {
+                    start = signal1.Length - index1 - 1;
+                    end = signal1.Length;
+                    index = 0;
+
+                    for (int j = start; j < end; j++)
+                    {
+                        sum += signal1[j] * signal2[index++];
+                    }
+
                     index1--;
                     index2++;
                 }
 
-                corr[i] = sum;
+                correlation[i] = sum;
             }
 
-            double max = corr.Max(c => Math.Abs(c.Real));
-
-            for (int i = 0; i < corr.Length; i++)
-            {
-                corr[i] /= max;
-            }
-
-            return corr;
-        }
-
-        public static Complex[] AutoCorrelation(double[] signal)
-        {
-            int length = 2 * signal.Length - 1;
-
-            Complex[] corr = new Complex[length];
-
-            int index1 = 0;
-            int index2 = signal.Length - 1;
-
-            for (int i = 0; i < length; i++)
-            {
-                Complex sum = 0;
-
-                int start = (i < signal.Length)
-                    ? index1 
-                    : index2;
-                int end = signal.Length;
-
-                for (int j = start; j < end; j++)
-                {
-                    sum += signal[index1] * signal[index2];
-                }
-
-                if (i < signal.Length - 1)
-                {
-                    index1++;
-                    index2--;
-                }
-                else
-                {
-                    index1--;
-                    index2++;
-                }
-
-                corr[i] = sum;
-            }
-
-            double max = corr.Max(c => Math.Abs(c.Real));
-
-            for (int i = 0; i < corr.Length; i++)
-            {
-                corr[i] /= max;
-            }
-
-            return corr;
+            return Normalize(correlation);
         }
 
         public static Complex[] FastCrossCorrelation(double[] signal1, double[] signal2)
         {
-            int L = signal1.Length;
-            Complex[] cps1 = new Complex[L];
-            Complex[] cps2 = new Complex[L];
+            int L =  signal1.Length + signal2.Length;
+
+            Complex[] complexSignal1 = new Complex[L];
+            Complex[] complexSignal2 = new Complex[L];
 
             for (int i = 0; i < signal1.Length; i++)
             {
-                cps1[i] = signal1[i];
-                cps2[i] = signal2[i];
+                complexSignal1[i] = signal1[i];
             }
 
-            Complex[] bpf1 = Butterfly.DecimationInTime(cps1, true);
-            Complex[] bpf2 = Butterfly.DecimationInTime(cps2, true);
+            for (int i = 0; i < signal2.Length; i++)
+            {
+                complexSignal2[i] = signal2[i];
+            }
 
-            Complex[] mult = new Complex[L];
+            Complex[] bpf1 = Butterfly.DecimationInTime(complexSignal1, true);
+            Complex[] bpf2 = Butterfly.DecimationInTime(complexSignal2, true);
+
+            Complex[] multiplicated = new Complex[L];
             for (int i = 0; i < L; i++)
             {
                 bpf1[i] /= bpf1.Length;
                 bpf2[i] /= bpf2.Length;
-                mult[i] = bpf1[i] * Complex.Conjugate(bpf2[i]);
+                multiplicated[i] = bpf1[i] * Complex.Conjugate(bpf2[i]);
             }
 
-            Complex[] corr = Butterfly.DecimationInTime(mult, false);
+            Complex[] correlation = Butterfly.DecimationInTime(multiplicated, false);
 
-            double max = corr.Max(c => Math.Abs(c.Real));
-
-            for (int i = 0; i < corr.Length; i++)
+            for (int i = 0; i < correlation.Length / 2; i++)
             {
-                corr[i] /= max;
+                Complex temp = correlation[i];
+                correlation[i] = correlation[correlation.Length / 2 + i];
+                correlation[correlation.Length / 2 + i] = temp;
             }
 
-            return corr;
+            return Normalize(correlation);
         }
 
-        public static Complex[] FastAutoCorrelation(double[] signal)
+        public static Complex[] AutoCorrelation(double[] signal, int shift)
         {
-            int L = signal.Length;
-            Complex[] cps = new Complex[L];
-
-            for (int i = 0; i < signal.Length; i++)
-            {
-                cps[i] = signal[i];
-            }
-
-            Complex[] bpf = Butterfly.DecimationInTime(cps, true);
-
-            Complex[] mult = new Complex[L];
-            for (int i = 0; i < L; i++)
-            {
-                bpf[i] /= bpf.Length;
-                mult[i] = bpf[i] * Complex.Conjugate(bpf[i]);
-            }
-
-            Complex[] corr = Butterfly.DecimationInTime(mult, false);
-
-            double max = corr.Max(c => Math.Abs(c.Real));
-
-            for (int i = 0; i < corr.Length; i++)
-            {
-                corr[i] /= max;
-            }
-
-            return corr;
+            return CrossCorrelation(signal, GetShiftedSignal(signal, shift));
         }
 
-        public static Complex[] FastMinimizeCrossCorrelation(double[] signal1, double[] signal2)
+        public static Complex[] FastAutoCorrelation(double[] signal, int shift)
         {
-            int L = signal1.Length;
-            Complex[] cps = new Complex[L];
-
-            for (int i = 0; i < signal1.Length; i++)
-            {
-                cps[i] = new Complex(signal1[i], signal2[i]);
-            }
-
-            Complex[] bpf = Butterfly.DecimationInTime(cps, true);
-
-            Complex[] mult = new Complex[L];
-            for (int i = 0; i < L; i++)
-            {
-                bpf[i] /= bpf.Length;
-                mult[i] = bpf[i] * Complex.Conjugate(bpf[i])
-                    - bpf[L - i - 1] * Complex.Conjugate(bpf[L - i - 1])
-                    - 2 * Complex.ImaginaryOne * (bpf[i] * bpf[L - i - 1]).Imaginary;
-            }
-
-            Complex[] corr = Butterfly.DecimationInTime(mult, false);
-
-            for (int i = 0; i < corr.Length; i++)
-            {
-                corr[i] *= Complex.ImaginaryOne / 4;
-            }
-
-            double max = corr.Max(c => Math.Abs(c.Real));
-
-            for (int i = 0; i < corr.Length; i++)
-            {
-                corr[i] /= max;
-            }
-
-            return corr;
+            return FastCrossCorrelation(signal, GetShiftedSignal(signal, shift));
         }
 
-        public static Complex[] FastMinimizeAutoCorrelation(double[] signal)
+        private static Complex[] Normalize(Complex[] values)
         {
-            int L = signal.Length;
-            Complex[] cps = new Complex[L];
+            Complex[] result = new Complex[values.Length];
 
-            for (int i = 0; i < signal.Length; i++)
+            double max = values.Max(c => Math.Abs(c.Real));
+
+            for (int i = 0; i < result.Length; i++)
             {
-                cps[i] = new Complex(signal[i], signal[i]);
+                result[i] = values[i] / max;
             }
 
-            Complex[] bpf = Butterfly.DecimationInTime(cps, true);
+            return result;
+        }
 
-            Complex[] mult = new Complex[L];
-            for (int i = 0; i < L; i++)
+        private static double[] GetShiftedSignal(double[] signal, int shift)
+        {
+            double[] shiftedSignal = new double[signal.Length];
+
+            for (int i = 0; i < shiftedSignal.Length; i++)
             {
-                bpf[i] /= bpf.Length;
-                mult[i] = bpf[i] * Complex.Conjugate(bpf[i])
-                    - bpf[L - i - 1] * Complex.Conjugate(bpf[L - i - 1])
-                    - 2 * Complex.ImaginaryOne * (bpf[i] * bpf[L - i - 1]).Imaginary;
+                int index = i - shift;
+                if (index < 0)
+                {
+                    index = signal.Length + index;
+                }
+                shiftedSignal[i] = signal[index];
             }
-
-            Complex[] corr = Butterfly.DecimationInTime(mult, false);
-
-            for (int i = 0; i < corr.Length; i++)
-            {
-                corr[i] *= Complex.ImaginaryOne / 4;
-            }
-
-            double max = corr.Max(c => Math.Abs(c.Real));
-
-            for (int i = 0; i < corr.Length; i++)
-            {
-                corr[i] /= max;
-            }
-
-            return corr;
+            return shiftedSignal;
         }
     }
 }
